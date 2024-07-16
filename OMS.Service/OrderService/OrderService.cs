@@ -12,7 +12,12 @@ namespace OMS.Service.OrderService
             _unitOfWork = unitOfWork;
         }
 
-
+        public void UpdateStock(OrderItem item, int quantity)
+        {
+            if (quantity < 0) throw new ArgumentOutOfRangeException(nameof(quantity));
+            item.Quantity -= quantity;
+            if (item.Quantity < 0) throw new InvalidOperationException("Insufficient stock.");
+        }
 
         public async Task<bool> ValidateStockAsync(Order order)
         {

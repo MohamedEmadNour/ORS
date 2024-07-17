@@ -19,6 +19,8 @@ using OMS.Service.EmailService;
 using OMS.Service.InvoiceService;
 using OMS.Service.OrderService;
 using Microsoft.AspNetCore.Identity;
+using OMS.Service.PayMentService;
+using PayPalCheckoutSdk.Core;
 
 
 
@@ -84,6 +86,19 @@ namespace OrderMangmentSystem.Helper
                 options.AddPolicy("SuperAdminPolicy", policy => policy.RequireRole("SuperAdmin"));
             });
 
+
+            var clientId = builder.Configuration["PayPal:ClientId"];
+            var clientSecret = builder.Configuration["PayPal:ClientSecret"];
+            var environment = new SandboxEnvironment(clientId, clientSecret);
+            var client = new PayPalHttpClient(environment);
+
+            var paymentProcessors = new Dictionary<string, IPaymentProcessor>
+            {
+                { "Stripe", new StripePaymentProcessor(builder.Configuration["Stripe:ApiKey"]) },
+                { "PayPal", new PayPalPaymentProcessor(client) }
+            };
+
+
             // Services
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<IUserService, UserService>();
@@ -92,6 +107,9 @@ namespace OrderMangmentSystem.Helper
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IFunctionService, FunctionService>();
+
+            builder.Services.AddSingleton(paymentProcessors);
+            builder.Services.AddTransient<PaymentService>();
             builder.Services.AddHttpContextAccessor();
 
             // Authentication

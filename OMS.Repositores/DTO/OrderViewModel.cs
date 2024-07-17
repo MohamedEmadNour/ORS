@@ -2,6 +2,7 @@
 using OMS.Data.Entites.Const;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,6 +38,7 @@ namespace OMS.Repositores.DTO
 
     public class UpdateOrderStatusDTO
     {
+        [Required]
         public OrderStatus Status { get; set; }
     }
 

@@ -12,25 +12,25 @@ namespace OMS.Data.Entites.Const
     public enum OrderStatus
     {
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        Pending,
+        Pending = 1,
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        Processing,
+        Processing = 2, 
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        Shipped,
+        Shipped = 3,
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        Delivered,
+        Delivered = 4,
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        Canceled,
+        Canceled = 5,
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        Paid,
+        Paid = 6,
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        PaymentFailed
+        PaymentFailed = 7
     }
 
 }

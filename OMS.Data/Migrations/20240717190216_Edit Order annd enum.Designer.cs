@@ -12,8 +12,8 @@ using OMS.Data.DBCOntext;
 namespace OMS.Data.Migrations
 {
     [DbContext(typeof(OSMDBContext))]
-    [Migration("20240715121354_OSMMigration")]
-    partial class OSMMigration
+    [Migration("20240717190216_Edit Order annd enum")]
+    partial class EditOrderanndenum
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,11 @@ namespace OMS.Data.Migrations
 
             modelBuilder.Entity("OMS.Data.Entites.Customer", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CustomerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -44,18 +44,18 @@ namespace OMS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("CustomerId");
 
                     b.ToTable("Customer");
                 });
 
             modelBuilder.Entity("OMS.Data.Entites.Invoice", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("InvoiceId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InvoiceId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -69,7 +69,7 @@ namespace OMS.Data.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                    b.HasKey("InvoiceId");
 
                     b.HasIndex("OrderId");
 
@@ -78,11 +78,11 @@ namespace OMS.Data.Migrations
 
             modelBuilder.Entity("OMS.Data.Entites.Order", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("OrderId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -90,21 +90,16 @@ namespace OMS.Data.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
 
-                    b.Property<string>("PaymentMethod")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                    b.HasKey("OrderId");
 
                     b.HasIndex("CustomerId");
 
@@ -113,11 +108,11 @@ namespace OMS.Data.Migrations
 
             modelBuilder.Entity("OMS.Data.Entites.OrderItem", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("OrderItemId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderItemId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -137,7 +132,7 @@ namespace OMS.Data.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.HasKey("Id");
+                    b.HasKey("OrderItemId");
 
                     b.HasIndex("OrderId");
 
@@ -148,11 +143,11 @@ namespace OMS.Data.Migrations
 
             modelBuilder.Entity("OMS.Data.Entites.Product", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("ProductId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -167,7 +162,7 @@ namespace OMS.Data.Migrations
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("ProductId");
 
                     b.ToTable("Product");
                 });

@@ -85,7 +85,7 @@ namespace OrderMangmentSystem.Controllers
 
             IdentityResult result;
 
-            if (registerDTO.CreatorEmail != null)
+            if (registerDTO.CreatorEmail != null && !string.IsNullOrWhiteSpace(registerDTO.CreatorEmail))
             {
                 result = await RegisterAdminUser(registerDTO.CreatorEmail, user, registerDTO.Password);
             }
@@ -139,7 +139,7 @@ namespace OrderMangmentSystem.Controllers
             var customer = await _UnitOfWork.repositories<Customer, int>().FindCustomerByEmail(email);
             if (customer == null) BadRequest(new ApiResponse(400, "Please contact support"));
 
-            user.UserName = customer.Name;
+            user.UserName = customer.Name.Trim().Replace(" ", "_");
             var result = await _userManager.CreateAsync(user, password);
             if (!result.Succeeded) return result;
 

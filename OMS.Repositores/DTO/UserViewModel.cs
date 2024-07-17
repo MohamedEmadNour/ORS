@@ -31,7 +31,7 @@ namespace OMS.Repositores.DTO
             ErrorMessage = "Password Must Be 6 Char Like 1234*AAaa*1234")]
         public string Password { get; set; }
 
-        public string? CreatorEmail { get; set; }
+        public string? CreatorEmail { get; set; } = null;
     }
     public class UserDTO
     {

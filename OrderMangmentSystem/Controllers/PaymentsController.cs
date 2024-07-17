@@ -6,6 +6,7 @@ using OMS.Repositores.DTO;
 using OMS.Repositores.Interfaces;
 using OMS.Repositores.Repositories;
 using OMS.Service.ExceptionsHandeling;
+using OMS.Service.Functions;
 using OMS.Service.PayMentService;
 
 namespace OrderMangmentSystem.Controllers
@@ -23,6 +24,7 @@ namespace OrderMangmentSystem.Controllers
             _unitOfWork = unitOfWork;
         }
 
+        [DynamicFunctionAuthorize("ProcessPayment")]
         [HttpPost]
         public async Task<ActionResult<PaymentResult>> ProcessPayment([FromBody] PaymentRequest request)
         {

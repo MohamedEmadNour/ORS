@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using OMS.Repositores.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace OMS.Service.EmailService
             _configuration = configuration;
         }
 
-        public async Task SendEmailAsync(string to, string subject, string body)
+        public async Task SendEmailAsync(string to, string subject, string invoicePath)
         {
             var smtpSettings = _configuration.GetSection("Smtp");
             using var client = new SmtpClient
@@ -33,11 +34,16 @@ namespace OMS.Service.EmailService
             {
                 From = new MailAddress(smtpSettings["Username"]),
                 Subject = subject,
-                Body = body,
+                Body = "Please find your invoice attached.",
                 IsBodyHtml = true
             };
 
             mailMessage.To.Add(to);
+
+            if (File.Exists(invoicePath))
+            {
+                mailMessage.Attachments.Add(new Attachment(invoicePath));
+            }
 
             await client.SendMailAsync(mailMessage);
         }

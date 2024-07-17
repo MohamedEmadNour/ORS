@@ -20,15 +20,28 @@ namespace OMS.Service.Functions
         {
             var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
 
-            var userIdentity = context.HttpContext.User.Identity as ClaimsIdentity;
+            var user = context.HttpContext.User;
+            if (!user.Identity.IsAuthenticated)
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
+
+            var userIdentity = user.Identity as ClaimsIdentity;
             string userId = userIdentity.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            var hasAccess = await userService.UserHasAccessAsync(userId, _functionName);
+            if (string.IsNullOrEmpty(userId))
+            {
+                context.Result = new UnauthorizedResult();
+                return;
+            }
 
+            var hasAccess = await userService.UserHasAccessAsync(userId, _functionName);
             if (!hasAccess)
             {
                 context.Result = new UnauthorizedResult();
             }
         }
+
     }
 }

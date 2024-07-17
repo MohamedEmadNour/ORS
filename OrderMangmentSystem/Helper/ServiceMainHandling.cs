@@ -34,7 +34,8 @@ namespace OrderMangmentSystem.Helper
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "OMS", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "OMS API", Version = "v1" });
+
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -44,10 +45,18 @@ namespace OrderMangmentSystem.Helper
                     BearerFormat = "JWT",
                     Scheme = "bearer"
                 });
+
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
-                        new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
                         Array.Empty<string>()
                     }
                 });
@@ -72,8 +81,7 @@ namespace OrderMangmentSystem.Helper
 
             builder.Services.AddAuthorization(options =>
             {
-                // You can configure your policies here if needed
-                options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+                options.AddPolicy("SuperAdminPolicy", policy => policy.RequireRole("SuperAdmin"));
             });
 
             // Services
@@ -87,7 +95,12 @@ namespace OrderMangmentSystem.Helper
             builder.Services.AddHttpContextAccessor();
 
             // Authentication
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters

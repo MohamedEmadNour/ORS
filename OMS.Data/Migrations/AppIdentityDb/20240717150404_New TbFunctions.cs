@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OMS.Data.Migrations.AppIdentityDb
 {
     /// <inheritdoc />
-    public partial class InitailAppIdentityDbContext : Migration
+    public partial class NewTbFunctions : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -54,15 +54,17 @@ namespace OMS.Data.Migrations.AppIdentityDb
                 name: "tbFunctions",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
+                    tbFunctionsId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FunctionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsAdminFunction = table.Column<bool>(type: "bit", nullable: false),
+                    IsUserFunction = table.Column<bool>(type: "bit", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tbFunctions", x => x.Id);
+                    table.PrimaryKey("PK_tbFunctions", x => x.tbFunctionsId);
                 });
 
             migrationBuilder.CreateTable(
@@ -173,14 +175,16 @@ namespace OMS.Data.Migrations.AppIdentityDb
                 name: "tbFunctionRoles",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false),
+                    tbFunctionRolesId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    tbFunctionsId = table.Column<int>(type: "int", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     IsDelete = table.Column<bool>(type: "bit", nullable: false),
                     CreatedTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tbFunctionRoles", x => new { x.Id, x.RoleId });
+                    table.PrimaryKey("PK_tbFunctionRoles", x => x.tbFunctionRolesId);
                     table.ForeignKey(
                         name: "FK_tbFunctionRoles_AspNetRoles_RoleId",
                         column: x => x.RoleId,
@@ -188,10 +192,10 @@ namespace OMS.Data.Migrations.AppIdentityDb
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_tbFunctionRoles_tbFunctions_Id",
-                        column: x => x.Id,
+                        name: "FK_tbFunctionRoles_tbFunctions_tbFunctionsId",
+                        column: x => x.tbFunctionsId,
                         principalTable: "tbFunctions",
-                        principalColumn: "Id",
+                        principalColumn: "tbFunctionsId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -238,6 +242,11 @@ namespace OMS.Data.Migrations.AppIdentityDb
                 name: "IX_tbFunctionRoles_RoleId",
                 table: "tbFunctionRoles",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tbFunctionRoles_tbFunctionsId",
+                table: "tbFunctionRoles",
+                column: "tbFunctionsId");
         }
 
         /// <inheritdoc />

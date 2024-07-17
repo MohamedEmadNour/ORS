@@ -23,6 +23,7 @@ namespace OrderMangmentSystem.Controllers
             _mapper = mapper;
         }
 
+        [DynamicFunctionAuthorize("GetInvoiceById")]
         [HttpGet("{invoiceId}", Name = "GetInvoiceById")]
         public async Task<ActionResult<InvoiceDTO>> GetInvoiceById(int invoiceId)
         {
@@ -36,6 +37,7 @@ namespace OrderMangmentSystem.Controllers
             return Ok(invoiceDTO);
         }
 
+        [DynamicFunctionAuthorize("GetAllInvoices")]
         [HttpGet("GetAllInvoices")]
         public async Task<ActionResult<IReadOnlyList<InvoiceDTO>>> GetAllInvoices()
         {

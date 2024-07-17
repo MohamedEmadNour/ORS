@@ -13,5 +13,7 @@ namespace OMS.Service.Functions
         Task<IEnumerable<tbFunctions>> GetAllFunctionsAsync();
         Task AddFunctionRolesAsync(IEnumerable<tbFunctionRoles> functionRoles);
 
+        Task UpdateFunctionsAsync(IEnumerable<tbFunctions> functions);
+
     }
 }

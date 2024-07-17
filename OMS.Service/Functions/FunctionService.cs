@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OMS.Data.DBCOntext.Identity;
+using iText.Commons.Actions.Contexts;
 
 namespace OMS.Service.Functions
 {
@@ -32,5 +33,12 @@ namespace OMS.Service.Functions
             _dbContext.tbFunctionRoles.AddRange(functionRoles);
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task UpdateFunctionsAsync(IEnumerable<tbFunctions> functions)
+        {
+            _dbContext.tbFunctions.UpdateRange(functions);
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

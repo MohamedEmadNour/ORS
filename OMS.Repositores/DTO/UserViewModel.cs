@@ -30,7 +30,8 @@ namespace OMS.Repositores.DTO
         [RegularExpression(@"^(?=.*\d{3})(?=.*[A-Za-z]{3}).{6,}$",
             ErrorMessage = "Password Must Be 6 Char Like 1234*AAaa*1234")]
         public string Password { get; set; }
-        public string Roles { get; set; }
+
+        public string? CreatorEmail { get; set; }
     }
     public class UserDTO
     {

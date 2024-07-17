@@ -8,8 +8,6 @@ namespace OMS.Data.Entites
 {
     public class BaseEntity<T>
     {
-        public T Id { get; set; }
-
         public DateTime CreatedTime { get; set; } = DateTime.Now;
     }
 }

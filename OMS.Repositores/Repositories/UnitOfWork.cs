@@ -24,6 +24,10 @@ namespace OMS.Repositores.Repositories
         public async Task<int> CompleteAsync()
             => await _context.SaveChangesAsync();
 
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
 
         public IGenericRepositories<T, TKey> repositories<T, TKey>() where T : BaseEntity<TKey>
         {

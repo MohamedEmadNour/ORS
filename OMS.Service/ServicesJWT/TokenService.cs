@@ -21,6 +21,7 @@ namespace OMS.Service.ServicesJWT
         {
             var Auth = new List<Claim>()
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Email, user.Email),
             };
 

@@ -8,27 +8,31 @@ using System.Threading.Tasks;
 
 namespace OMS.Repositores.DTO
 {
-    public class OrderViewModel
+    public class OrderViewModel : CreateOrderDTO
     {
         public int OrderId { get; set; }
-        public DateTime OrderDate { get; set; }
-        public PaymentMethods PaymentMethod { get; set; }
-
-        public List<OrderItemDTO> OrderItems { get; set; }
 
     }
 
     public class OrderDTO : OrderViewModel
     {
 
-        public int CustomerId { get; set; }
+        public string CustomerName { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; }
-  
-    }
-    public class CreateOrderDTO : OrderViewModel
-    {
 
+
+    }
+    public class CreateOrderDTO 
+    {
+        public DateTime OrderDate { get; set; }
+        public PaymentMethods PaymentMethod { get; set; }
+
+        public List<OrderItemDTO> OrderItems { get; set; }
+
+        public int CustomerId { get; set; }
+
+        public string Email { get; set; }
     }
 
     public class UpdateOrderStatusDTO

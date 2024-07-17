@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using OMS.Data.DBCOntext;
 using OMS.Data.Entites;
 using OMS.Repositores.Interfaces;
@@ -14,19 +15,49 @@ namespace OMS.Repositores.Repositories
         {
             _context = context;
         }
-        public async Task<IReadOnlyList<T>> GetAllAsync(Expression<Func<T, bool>> predicate)
+        public async Task<IReadOnlyList<T>> GetAllAsync(
+            Expression<Func<T, bool>> predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null)
         {
-            return await _context.Set<T>().Where(predicate).ToListAsync();
+            IQueryable<T> query = _context.Set<T>();
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            return await query.ToListAsync();
         }
 
-        public async Task<IReadOnlyList<T>> GetAllAsync()
-        {
-            return await _context.Set<T>().ToListAsync();
-        }
 
         public async Task<T> GetByIdAsync(TKey id)
         {
             return await _context.Set<T>().FindAsync(id);
+        }
+
+
+        public async Task<T> GetByIdAsync(TKey id, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null)
+        {
+            IQueryable<T> query = _context.Set<T>();
+
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            var keyProperty = _context.Model.FindEntityType(typeof(T)).FindPrimaryKey().Properties.First();
+            return await query.FirstOrDefaultAsync(e => EF.Property<TKey>(e, keyProperty.Name).Equals(id));
         }
 
         public async Task AddAsync(T entity)
@@ -38,5 +69,11 @@ namespace OMS.Repositores.Repositories
         public void Delete(T entity)
             => _context.Set<T>().Remove(entity);
 
+        public async Task<Customer> FindCustomerByEmail(string email)
+        {
+            return await _context.Set<Customer>()
+                                 .Where(e => e.Email.ToLower() == email.ToLower())
+                                 .FirstOrDefaultAsync();
+        }
     }
 }

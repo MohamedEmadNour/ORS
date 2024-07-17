@@ -9,6 +9,6 @@ namespace OMS.Service.InvoiceService
 {
     public interface IInvoiceService
     {
-        Task<Invoice> GenerateInvoiceAsync(Order order);
+        Task<string> GenerateInvoiceAsync(Order order);
     }
 }

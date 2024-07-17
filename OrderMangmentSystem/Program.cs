@@ -31,13 +31,20 @@ namespace OrderMangmentSystem
                 app.UseHsts(); 
             }
 
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+
             app.UseCors("AllowOrigin");
+
             app.UseMiddleware<ServiceApiMiddleware>();
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapControllers();
+
 
 
 

@@ -35,11 +35,11 @@ namespace OMS.Data.DBCOntext.Identity
 
             modelBuilder.Entity<tbFunctionRoles>(builder =>
             {
-                builder.HasKey(fr => new { fr.Id, fr.RoleId });
+                builder.HasKey(fr => fr.tbFunctionRolesId);
 
                 builder.HasOne(fr => fr.tbFunctions)
                     .WithMany(f => f.tbFunctionRoles)
-                    .HasForeignKey(fr => fr.Id);
+                    .HasForeignKey(fr => fr.tbFunctionsId);
 
                 builder.HasOne(fr => fr.AppRole)
                     .WithMany(r => r.tbFunctionRoles)

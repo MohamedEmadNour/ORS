@@ -13,7 +13,7 @@ namespace OMS.Service.Utilites
 {
     public static class FunctionScanner
     {
-        public static IEnumerable<tbFunctions> GetControllerAndActionNames(string Id)
+        public static IEnumerable<tbFunctions> GetControllerAndActionNames()
         {
             var functions = new List<tbFunctions>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();

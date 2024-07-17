@@ -5,27 +5,51 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using OMS.Data.DBCOntext.Identity;
+using iText.Commons.Actions.Contexts;
+using Microsoft.AspNetCore.Identity;
+using OMS.Data.Entites.Accounting;
+using OMS.Data.Entites.Const;
 
 namespace OMS.Service.UserServ
 {
     public class UserService : IUserService
     {
-        private readonly AppIdentityDbContext _dbContext;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly AppIdentityDbContext _context;
 
-        public UserService(AppIdentityDbContext dbContext)
+        public UserService(UserManager<AppUser> userManager, AppIdentityDbContext context)
         {
-            _dbContext = dbContext;
+            _userManager = userManager;
+            _context = context;
         }
 
         public async Task<bool> UserHasAccessAsync(string userId, string functionName)
         {
-            var hasAccess = await (from func in _dbContext.tbFunctions
-                                   join funcRole in _dbContext.tbFunctionRoles on func.Id equals funcRole.Id
-                                   join userRole in _dbContext.UserRoles on funcRole.RoleId equals userRole.RoleId
-                                   where userRole.UserId == userId && func.FunctionName == functionName && func.IsDelete == false && funcRole.IsDelete == false
-                                   select func).AnyAsync();
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
 
-            return hasAccess;
+            if (await _userManager.IsInRoleAsync(user, RolesConstants.SuperAdmin))
+            {
+                return true;
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var function = await _context.tbFunctions
+                                           .Include(f => f.tbFunctionRoles)
+                                           .FirstOrDefaultAsync(f => f.FunctionName == functionName);
+
+            if (function == null) return false;
+
+            foreach (var role in userRoles)
+            {
+                if (function.tbFunctionRoles.Any(fr => fr.RoleId == role))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

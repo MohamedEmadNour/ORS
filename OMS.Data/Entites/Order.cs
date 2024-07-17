@@ -11,10 +11,12 @@ namespace OMS.Data.Entites
 
     public class Order : BaseEntity<int>
     {
-        public decimal TotalAmount { get; set; }
-        public List<OrderItem> OrderItems { get; set; }
-        public PaymentMethods PaymentMethod { get; set; }
+        public int OrderId { get; set; }
+        public int CustomerId { get; set; }
         public string Status { get; set; }
+        public decimal TotalAmount { get; set; }
+        public PaymentMethods PaymentMethod { get; set; }
+        public List<OrderItem> OrderItems { get; set; }
 
         public Customer Customer { get; set; }
     }

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OMS.Data.Entites;
 using OMS.Repositores.DTO;
 using OMS.Repositores.Interfaces;
 using OMS.Service.ExceptionsHandeling;
+using OMS.Service.Functions;
 using System.Threading.Tasks;
 
 namespace OrderMangmentSystem.Controllers
@@ -21,6 +23,7 @@ namespace OrderMangmentSystem.Controllers
             _mapper = mapper;
         }
 
+        [DynamicFunctionAuthorize("CreateCustomer")]
         [HttpPost]
         public async Task<ActionResult<CustomerDTO>> CreateCustomer([FromBody] CreateCustomerDTO createCustomerDTO)
         {
@@ -30,27 +33,40 @@ namespace OrderMangmentSystem.Controllers
             }
 
             var customer = _mapper.Map<Customer>(createCustomerDTO);
-            await _unitOfWork.repositories<Customer, int>().AddAsync(customer);
-            await _unitOfWork.CompleteAsync();
+            var result = _unitOfWork.repositories<Customer, int>().AddAsync(customer);
+            if (result.IsCompletedSuccessfully)
+            {
+                await _unitOfWork.CompleteAsync();
+                var customerDTO = _mapper.Map<CustomerDTO>(customer);
+                return CreatedAtAction(nameof(GetCustomerById), new { id = customer.CustomerId }, customerDTO);
+                
+            }
 
-            var customerDTO = _mapper.Map<CustomerDTO>(customer);
-            return CreatedAtAction(nameof(GetCustomerById), new { id = customerDTO.CustomerId }, customerDTO);
+            return NotFound(new ApiResponse(500));
         }
 
+        [DynamicFunctionAuthorize("GetAllOrdersForCustomer")]
         [HttpGet("{customerId}/orders")]
         public async Task<ActionResult<IReadOnlyList<OrderDTO>>> GetAllOrdersForCustomer(int customerId)
         {
-            var customer = await _unitOfWork.repositories<Customer, int>().GetByIdAsync(customerId);
+            var customer = await GetCustomerById(customerId);
             if (customer == null)
             {
                 return NotFound(new ApiResponse(404, "Customer not found"));
             }
 
-            var orders = await _unitOfWork.repositories<Order, int>().GetAllAsync(o => o.Id == customerId);
+            var orders = await _unitOfWork.repositories<Order, int>().GetAllAsync(
+                predicate : o => o.CustomerId == customerId,
+                include: o => o.Include( o => o.OrderItems ) 
+            );
+
             var orderMapping = _mapper.Map<IReadOnlyList<Order>, IReadOnlyList<OrderDTO>>(orders);
+            
             return Ok(orderMapping);
+    
         }
 
+        [DynamicFunctionAuthorize("GetCustomerById")]
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomerDTO>> GetCustomerById(int id)
         {

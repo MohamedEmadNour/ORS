@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OMS.Repositores.Interfaces
 {
-    public interface IUnitOfWork 
+    public interface IUnitOfWork : IDisposable
     {
         IGenericRepositories<T,TKey> repositories<T , TKey>() where T : BaseEntity<TKey>;
 

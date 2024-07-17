@@ -222,11 +222,11 @@ namespace OMS.Data.Migrations.AppIdentityDb
 
             modelBuilder.Entity("OMS.Data.Entites.System.tbFunctionRoles", b =>
                 {
-                    b.Property<long>("Id")
-                        .HasColumnType("bigint");
+                    b.Property<int>("tbFunctionRolesId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("tbFunctionRolesId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -234,20 +234,29 @@ namespace OMS.Data.Migrations.AppIdentityDb
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id", "RoleId");
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("tbFunctionsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("tbFunctionRolesId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("tbFunctionsId");
 
                     b.ToTable("tbFunctionRoles");
                 });
 
             modelBuilder.Entity("OMS.Data.Entites.System.tbFunctions", b =>
                 {
-                    b.Property<long>("Id")
+                    b.Property<int>("tbFunctionsId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
+                        .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("tbFunctionsId"));
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -256,10 +265,16 @@ namespace OMS.Data.Migrations.AppIdentityDb
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsAdminFunction")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDelete")
                         .HasColumnType("bit");
 
-                    b.HasKey("Id");
+                    b.Property<bool>("IsUserFunction")
+                        .HasColumnType("bit");
+
+                    b.HasKey("tbFunctionsId");
 
                     b.ToTable("tbFunctions");
                 });
@@ -317,15 +332,15 @@ namespace OMS.Data.Migrations.AppIdentityDb
 
             modelBuilder.Entity("OMS.Data.Entites.System.tbFunctionRoles", b =>
                 {
-                    b.HasOne("OMS.Data.Entites.System.tbFunctions", "tbFunctions")
-                        .WithMany("tbFunctionRoles")
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("OMS.Data.Entites.System.AppRole", "AppRole")
                         .WithMany("tbFunctionRoles")
                         .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OMS.Data.Entites.System.tbFunctions", "tbFunctions")
+                        .WithMany("tbFunctionRoles")
+                        .HasForeignKey("tbFunctionsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

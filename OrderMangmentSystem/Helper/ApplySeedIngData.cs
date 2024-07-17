@@ -67,35 +67,29 @@ namespace OrderMangmentSystem.Helper
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
-                var user = dbContext!.AppUsers.FirstOrDefault(u => u.UserName == "M.Emad");
-
                 var functionService = scope.ServiceProvider.GetRequiredService<IFunctionService>();
                 var existingFunctions = await functionService.GetAllFunctionsAsync();
-                var scannedFunctions = FunctionScanner.GetControllerAndActionNames(user.Id);
+                var scannedFunctions = FunctionScanner.GetControllerAndActionNames();
 
                 var existingFunctionNames = existingFunctions.Select(f => f.FunctionName).ToHashSet();
                 var scannedFunctionNames = scannedFunctions.Select(f => f.FunctionName).ToHashSet();
 
-                // Functions to add
                 var functionsToAdd = scannedFunctions.Where(f => !existingFunctionNames.Contains(f.FunctionName)).ToList();
-
-                // Functions to remove
                 var functionsToRemove = existingFunctions.Where(f => !scannedFunctionNames.Contains(f.FunctionName)).ToList();
 
-                // Remove obsolete functions
                 if (functionsToRemove.Any())
                 {
-                    dbContext.tbFunctions.UpdateRange(functionsToRemove);
+                    dbContext.tbFunctions.RemoveRange(functionsToRemove);
                     await dbContext.SaveChangesAsync();
                 }
 
-                // Add new functions
                 if (functionsToAdd.Any())
                 {
                     await functionService.AddFunctionsAsync(functionsToAdd);
                 }
             }
         }
+
         public static async Task SyncFunctionRolesWithDatabase(IApplicationBuilder app)
         {
             using (var scope = app.ApplicationServices.CreateScope())
@@ -103,46 +97,68 @@ namespace OrderMangmentSystem.Helper
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppIdentityDbContext>();
                 var functionService = scope.ServiceProvider.GetRequiredService<IFunctionService>();
 
-                // Get SuperAdmin role
-                var superAdminRole = await dbContext.AppRole.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
-                var adminUser = await dbContext.AppUsers.FirstOrDefaultAsync(u => u.UserName == "M.Emad");
+                var superAdminRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
+                var adminRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+                var userRole = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "User");
 
-                if (adminUser == null)
+                if (superAdminRole == null || adminRole == null || userRole == null)
                 {
-                    throw new Exception("Admin user not found in the database.");
-                }
-
-                if (superAdminRole == null)
-                {
-                    throw new Exception("SuperAdmin role not found in the database.");
+                    throw new Exception("Roles not found in the database.");
                 }
 
                 var existingFunctions = await functionService.GetAllFunctionsAsync();
-                var existingFunctionRoleIds = dbContext.tbFunctionRoles
-                                                        .Where(fr => fr.RoleId == superAdminRole.Id)
-                                                        .ToHashSet();
+                var existingFunctionRoles = await dbContext.tbFunctionRoles.ToListAsync();
 
-                var functionsToAddRoles = existingFunctions
-                                           .Where(f => !existingFunctionRoleIds.Select(s => s.Id).Contains(f.Id))
-                                           .Select(f => new tbFunctionRoles
-                                           {
-                                               Id = f.Id,
-                                               RoleId = superAdminRole.Id,
-                                               IsDelete = false
-                                           })
-                                           .ToList();
-                var functionsToAddRolesRemove = existingFunctionRoleIds.Where(existingFunctionRole => !existingFunctions.Select(s => s.Id).Contains(existingFunctionRole.Id));
-                if (functionsToAddRoles.Any())
+                var existingFunctionRoleIds = existingFunctionRoles.ToLookup(fr => fr.tbFunctionsId);
+
+                foreach (var function in existingFunctions)
                 {
-                    await functionService.AddFunctionRolesAsync(functionsToAddRoles);
+                    if (!existingFunctionRoleIds[function.tbFunctionsId].Any(fr => fr.RoleId == superAdminRole.Id))
+                    {
+                        dbContext.tbFunctionRoles.Add(new tbFunctionRoles
+                        {
+                            tbFunctionsId = function.tbFunctionsId,
+                            RoleId = superAdminRole.Id,
+                            IsDelete = false
+                        });
+                    }
+
+                    if (function.IsAdminFunction &&
+                        !existingFunctionRoleIds[function.tbFunctionsId].Any(fr => fr.RoleId == adminRole.Id))
+                    {
+                        dbContext.tbFunctionRoles.Add(new tbFunctionRoles
+                        {
+                            tbFunctionsId = function.tbFunctionsId,
+                            RoleId = adminRole.Id,
+                            IsDelete = false
+                        });
+                    }
+
+                    if (function.IsUserFunction &&
+                        !existingFunctionRoleIds[function.tbFunctionsId].Any(fr => fr.RoleId == userRole.Id))
+                    {
+                        dbContext.tbFunctionRoles.Add(new tbFunctionRoles
+                        {
+                            tbFunctionsId = function.tbFunctionsId,
+                            RoleId = userRole.Id,
+                            IsDelete = false
+                        });
+                    }
                 }
-                if (functionsToAddRolesRemove.Any())
+
+                // Remove roles that are no longer valid
+                var rolesToRemove = existingFunctionRoles
+                    .Where(fr => !existingFunctions.Any(f => f.tbFunctionsId == fr.tbFunctionsId))
+                    .ToList();
+
+                if (rolesToRemove.Any())
                 {
-   
-                    dbContext.tbFunctionRoles.UpdateRange(functionsToAddRolesRemove);
-                    await dbContext.SaveChangesAsync();
+                    dbContext.tbFunctionRoles.RemoveRange(rolesToRemove);
                 }
+
+                await dbContext.SaveChangesAsync();
             }
         }
+
     }
 }

@@ -8,6 +8,7 @@ namespace OMS.Data.Entites
 {
     public class Customer : BaseEntity<int>
     {
+        public int CustomerId { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public List<Order> Orders { get; set; }

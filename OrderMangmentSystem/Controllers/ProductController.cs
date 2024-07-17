@@ -25,16 +25,22 @@ namespace OrderMangmentSystem.Controllers
             _mapper = mapper;
         }
 
-        
+        [DynamicFunctionAuthorize("GetAllProduct")]
         [HttpGet("GetAllProduct")]
         public async Task<ActionResult<IReadOnlyList<ProductDTO>>> GetAllProduct()
         {
             var products = await _unitOfWork.repositories<Product, int>().GetAllAsync();
-            var productMapping = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductDTO>>(products);
-            return Ok(productMapping);
+            if (products != null)
+            {
+                var productMapping = _mapper.Map<IReadOnlyList<Product>, IReadOnlyList<ProductDTO>>(products);
+                return Ok(productMapping);
+                
+            }
+            return NotFound(new ApiResponse(404));
+
         }
 
-
+        [DynamicFunctionAuthorize("GetProductById")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> GetProductById(int id)
         {
@@ -51,6 +57,7 @@ namespace OrderMangmentSystem.Controllers
             return BadRequest(new ApiResponse(400));
         }
 
+        [DynamicFunctionAuthorize("AddNewProduct")]
         [HttpPost("AddNewProduct")]
         public async Task<ActionResult<addNewProductDTO>> AddNewProduct([FromForm] addNewProductDTO addNewProductDTO)
         {
@@ -62,30 +69,33 @@ namespace OrderMangmentSystem.Controllers
                     var result = _unitOfWork.repositories<Product, int>().AddAsync(product);
                     if (result.IsCompletedSuccessfully)
                     {
-                        return Ok(result);
+                        await _unitOfWork.CompleteAsync();
+                        return Ok(product);
                     }
                 }
             }
             return BadRequest(addNewProductDTO);
         }
 
+        [DynamicFunctionAuthorize("UpDateProduct")]
         [HttpPut("UpDateProduct")]
         public async Task<ActionResult<Product>> UpDateProduct([FromForm] Product addNewProductDTO)
         {
-            if (addNewProductDTO.Id != 0)
+            if (addNewProductDTO.ProductId != 0)
             {
-                var product = _unitOfWork.repositories<Product, int>().GetByIdAsync(addNewProductDTO.Id);
+                var product = _unitOfWork.repositories<Product, int>().GetByIdAsync(addNewProductDTO.ProductId);
                 if (product is null) return NotFound(new ApiResponse(404));
 
                 var productUpdeted = new Product()
                 {
-                    Id = product.Id,
+                    ProductId = product.Id,
                     Name = addNewProductDTO.Name,
                     Price = addNewProductDTO.Price,
                     Stock = addNewProductDTO.Stock,
                 };
 
                 _unitOfWork.repositories<Product, int>().Update(productUpdeted);
+                await _unitOfWork.CompleteAsync();
 
                 return Ok(productUpdeted);
             }

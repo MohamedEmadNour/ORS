@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OMS.Data.Entites;
+using OMS.Data.Entites.Const;
 using OMS.Repositores.DTO;
 using OMS.Repositores.Interfaces;
 using OMS.Service.EmailService;
@@ -86,7 +87,7 @@ namespace OrderMangmentSystem.Controllers
                     order.TotalAmount = order.OrderItems.Sum(It => It.Quantity * It.UnitPrice);
 
                     var discount = _orderService.ApplyDiscount(order);
-                    order.Status = "Ready";
+                    order.Status = OrderStatus.Processing;
                     
                     await _unitOfWork.repositories<Order, int>().AddAsync(order);
                     await _unitOfWork.CompleteAsync();
@@ -160,5 +161,6 @@ namespace OrderMangmentSystem.Controllers
 
             return NoContent();
         }
+
     }
 }

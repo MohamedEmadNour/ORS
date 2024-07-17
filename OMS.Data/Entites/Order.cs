@@ -13,7 +13,7 @@ namespace OMS.Data.Entites
     {
         public int OrderId { get; set; }
         public int CustomerId { get; set; }
-        public string Status { get; set; }
+        public OrderStatus Status { get; set; }
         public decimal TotalAmount { get; set; }
         public PaymentMethods PaymentMethod { get; set; }
         public List<OrderItem> OrderItems { get; set; }

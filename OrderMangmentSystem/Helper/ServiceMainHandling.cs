@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Converters;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OMS.Service.ServicesJWT;
@@ -21,6 +22,10 @@ using OMS.Service.OrderService;
 using Microsoft.AspNetCore.Identity;
 using OMS.Service.PayMentService;
 using PayPalCheckoutSdk.Core;
+using Stripe;
+using InvoiceService = OMS.Service.InvoiceService.InvoiceService;
+using TokenService = OMS.Service.ServicesJWT.TokenService;
+using System.Text.Json.Serialization;
 
 
 
@@ -30,8 +35,12 @@ namespace OrderMangmentSystem.Helper
     {
         public static WebApplicationBuilder ApplyServiceMainHandling(WebApplicationBuilder builder)
         {
-            
-            builder.Services.AddControllersWithViews();
+
+            builder.Services.AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>

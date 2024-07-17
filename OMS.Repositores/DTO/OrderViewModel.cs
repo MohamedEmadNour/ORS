@@ -37,7 +37,7 @@ namespace OMS.Repositores.DTO
 
     public class UpdateOrderStatusDTO
     {
-        public string Status { get; set; }
+        public OrderStatus Status { get; set; }
     }
 
 

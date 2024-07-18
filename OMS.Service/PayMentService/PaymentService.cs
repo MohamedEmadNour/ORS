@@ -1,4 +1,5 @@
-﻿using OMS.Repositores.DTO;
+﻿using OMS.Data.Entites.Const;
+using OMS.Repositores.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,10 @@ namespace OMS.Service.PayMentService
             _paymentProcessors = paymentProcessors;
         }
 
-        public async Task<PaymentResult> ProcessPayment(string method, PaymentDetails paymentDetails)
+        public async Task<PaymentResult> ProcessPayment(PaymentMethods method, PaymentDetails paymentDetails)
         {
-            if (_paymentProcessors.TryGetValue(method, out var processor))
+            var paymentMethod = method.ToString().ToLower();
+            if (_paymentProcessors.TryGetValue(paymentMethod, out var processor))
             {
                 return await processor.ProcessPayment(paymentDetails);
             }
@@ -26,5 +28,6 @@ namespace OMS.Service.PayMentService
             throw new NotSupportedException($"Payment method {method} is not supported.");
         }
     }
+
 
 }

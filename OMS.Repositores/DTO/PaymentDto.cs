@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OMS.Data.Entites.Const;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,15 +10,14 @@ namespace OMS.Repositores.DTO
     public class PaymentRequest
     {
         public int OrderId { get; set; }
-        public string Method { get; set; }
-        public int Amount { get; set; }
+        public PaymentMethods Method { get; set; }
         public string Token { get; set; }
 
     }
 
     public class PaymentDetails
     {
-        public int Amount { get; set; }
+        public decimal Amount { get; set; }
         public int OrderId { get; set; }
         public string Token { get; set; }
 

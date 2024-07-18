@@ -49,7 +49,7 @@ namespace OrderMangmentSystem.Controllers
 
         [DynamicFunctionAuthorize("CreateOrder")]
         [HttpPost("CreateOrder")]
-        public async Task<ActionResult<OrderDTO>> CreateOrder(CreateOrderDTO createOrderDto)
+        public async Task<ActionResult<OrderDTO>> CreateOrder([FromForm] CreateOrderDTO createOrderDto)
         {
             if (createOrderDto != null)
             {
@@ -136,7 +136,7 @@ namespace OrderMangmentSystem.Controllers
 
         [DynamicFunctionAuthorize("UpdateOrderStatus")]
         [HttpPut("{orderId}/status")]
-        public async Task<IActionResult> UpdateOrderStatus(int orderId, UpdateOrderStatusDTO updateOrderStatusDto)
+        public async Task<IActionResult> UpdateOrderStatus(int orderId, [FromForm] UpdateOrderStatusDTO updateOrderStatusDto)
         {
             var order = await _unitOfWork.repositories<Order, int>().GetByIdAsync(
                 id: orderId,

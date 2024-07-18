@@ -95,17 +95,46 @@ namespace OrderMangmentSystem.Helper
                 options.AddPolicy("SuperAdminPolicy", policy => policy.RequireRole("SuperAdmin"));
             });
 
-
-            var clientId = builder.Configuration["PayPal:ClientId"];
-            var clientSecret = builder.Configuration["PayPal:ClientSecret"];
-            var environment = new SandboxEnvironment(clientId, clientSecret);
-            var client = new PayPalHttpClient(environment);
-
-            var paymentProcessors = new Dictionary<string, IPaymentProcessor>
+            builder.Services.AddSingleton<PayPalHttpClient>(provider =>
             {
-                { "Stripe", new StripePaymentProcessor(builder.Configuration["Stripe:ApiKey"]) },
-                { "PayPal", new PayPalPaymentProcessor(client) }
-            };
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var environment = new SandboxEnvironment(
+                    configuration["PayPal:ClientId"],
+                    configuration["PayPal:ClientSecret"]);
+                return new PayPalHttpClient(environment);
+            });
+
+            builder.Services.AddTransient<PayPalPaymentProcessor>();
+
+            builder.Services.AddSingleton(provider =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var stripeApiKey = configuration["Stripe:ApiKey"];
+                return stripeApiKey;
+            });
+
+            builder.Services.AddTransient<StripePaymentProcessor>(provider =>
+            {
+                var apiKey = provider.GetRequiredService<string>();
+                var logger = provider.GetRequiredService<ILogger<StripePaymentProcessor>>();
+                return new StripePaymentProcessor(apiKey, logger);
+            });
+
+            builder.Services.AddSingleton<PaymentService>(provider =>
+            {
+                var payPalProcessor = provider.GetRequiredService<PayPalPaymentProcessor>();
+                var stripeProcessor = provider.GetRequiredService<StripePaymentProcessor>();
+
+                var processors = new Dictionary<string, IPaymentProcessor>
+                {
+                    { "paypal", payPalProcessor },
+                    { "credit_card", stripeProcessor }
+                };
+
+                return new PaymentService(processors);
+            });
+
+
 
 
             // Services
@@ -117,8 +146,6 @@ namespace OrderMangmentSystem.Helper
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IFunctionService, FunctionService>();
 
-            builder.Services.AddSingleton(paymentProcessors);
-            builder.Services.AddTransient<PaymentService>();
             builder.Services.AddHttpContextAccessor();
 
             // Authentication

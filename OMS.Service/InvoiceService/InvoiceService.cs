@@ -72,6 +72,9 @@ namespace OMS.Service.InvoiceService
                     orderDetailsTable.AddCell(new Cell().Add(new Paragraph("Order Date:").SetBold()).SetBorder(Border.NO_BORDER));
                     orderDetailsTable.AddCell(new Cell().Add(new Paragraph(order.CreatedTime.ToString("yyyy-MM-dd"))).SetBorder(Border.NO_BORDER));
 
+                    orderDetailsTable.AddCell(new Cell().Add(new Paragraph("Order Status:").SetBold()).SetBorder(Border.NO_BORDER));
+                    orderDetailsTable.AddCell(new Cell().Add(new Paragraph(order.Status.ToString()).SetBorder(Border.NO_BORDER)));
+                    
                     document.Add(orderDetailsTable);
 
                     Table itemTable = new Table(4).UseAllAvailableWidth().SetMarginTop(20);
@@ -79,6 +82,7 @@ namespace OMS.Service.InvoiceService
                     itemTable.AddHeaderCell("Quantity");
                     itemTable.AddHeaderCell("Unit Price");
                     itemTable.AddHeaderCell("Total");
+
 
                     foreach (var item in order.OrderItems)
                     {
@@ -99,6 +103,7 @@ namespace OMS.Service.InvoiceService
                     OrderId = order.OrderId,
                     CreatedTime = order.CreatedTime,
                     TotalAmount = order.TotalAmount,
+                    Status = order.Status,
                 };
 
                 await _unitOfWork.repositories<Invoice , int>().AddAsync(invoice);

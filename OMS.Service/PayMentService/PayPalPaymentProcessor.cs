@@ -7,56 +7,75 @@ using System.Net;
 using System.Threading.Tasks;
 using OMS.Repositores.DTO;
 using OMS.Service.PayMentService;
+using Microsoft.Extensions.Logging;
 
-public class PayPalPaymentProcessor : IPaymentProcessor
+namespace OMS.Service.PayMentService
 {
-    private readonly PayPalHttpClient _payPalClient;
-
-    public PayPalPaymentProcessor(PayPalHttpClient client)
+    public class PayPalPaymentProcessor : IPaymentProcessor
     {
-        _payPalClient = client;
-    }
+        private readonly PayPalHttpClient _payPalClient;
+        private readonly ILogger<PayPalPaymentProcessor> _logger;
 
-    public async Task<PaymentResult> ProcessPayment(PaymentDetails paymentDetails)
-    {
-        var request = new OrdersCreateRequest();
-        request.Prefer("return=representation");
-        request.RequestBody(new OrderRequest()
+        public PayPalPaymentProcessor(PayPalHttpClient client, ILogger<PayPalPaymentProcessor> logger)
         {
-            CheckoutPaymentIntent = "CAPTURE",
-            PurchaseUnits = new List<PurchaseUnitRequest>
+            _payPalClient = client;
+            _logger = logger;
+        }
+
+        public async Task<PaymentResult> ProcessPayment(PaymentDetails paymentDetails)
+        {
+            try
             {
-                new PurchaseUnitRequest
+                var request = new OrdersCreateRequest();
+                request.Prefer("return=representation");
+                request.RequestBody(new OrderRequest()
                 {
-                    AmountWithBreakdown = new AmountWithBreakdown
+                    CheckoutPaymentIntent = "CAPTURE",
+                    PurchaseUnits = new List<PurchaseUnitRequest>
+                {
+                    new PurchaseUnitRequest
                     {
-                        CurrencyCode = "USD",
-                        Value = paymentDetails.Amount.ToString()
+                        AmountWithBreakdown = new AmountWithBreakdown
+                        {
+                            CurrencyCode = "USD",
+                            Value = paymentDetails.Amount.ToString()
+                        }
                     }
                 }
+                });
+
+                var response = await _payPalClient.Execute(request);
+                var result = response.Result<Order>();
+
+                if (response.StatusCode == HttpStatusCode.Created)
+                {
+                    return new PaymentResult
+                    {
+                        Success = true,
+                        TransactionId = result.Id,
+                        Message = "Payment successful"
+                    };
+                }
+                else
+                {
+                    _logger.LogError("PayPal payment failed: {Response}", response);
+                    return new PaymentResult
+                    {
+                        Success = false,
+                        Message = "Payment failed"
+                    };
+                }
             }
-        });
-
-        var response = await _payPalClient.Execute(request);
-        var statusCode = response.StatusCode;
-        var result = response.Result<Order>();
-
-        if (statusCode == HttpStatusCode.Created)
-        {
-            return new PaymentResult
+            catch (Exception ex)
             {
-                Success = true,
-                TransactionId = result.Id,
-                Message = "Payment successful"
-            };
-        }
-        else
-        {
-            return new PaymentResult
-            {
-                Success = false,
-                Message = "Payment failed"
-            };
+                _logger.LogError(ex, "Error processing PayPal payment");
+                return new PaymentResult
+                {
+                    Success = false,
+                    Message = "Payment failed"
+                };
+            }
         }
     }
 }
+

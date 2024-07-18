@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OMS.Data.Entites.Const;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,9 @@ namespace OMS.Data.Entites
     {
         public int InvoiceId { get; set; }
         public int OrderId { get; set; }
+
+        public OrderStatus Status { get; set; }
+
         public DateTime InvoiceDate { get; set; } = DateTime.Now;
         public decimal TotalAmount { get; set; }
         public Order Order { get; set; }

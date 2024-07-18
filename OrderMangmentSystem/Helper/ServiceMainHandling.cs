@@ -95,6 +95,14 @@ namespace OrderMangmentSystem.Helper
                 options.AddPolicy("SuperAdminPolicy", policy => policy.RequireRole("SuperAdmin"));
             });
 
+
+            builder.Services.AddSingleton(provider =>
+            {
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var stripeSecretKey = configuration["Stripe:SecretKey"];
+                return stripeSecretKey;
+            });
+
             builder.Services.AddSingleton<PayPalHttpClient>(provider =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
@@ -104,20 +112,24 @@ namespace OrderMangmentSystem.Helper
                 return new PayPalHttpClient(environment);
             });
 
-            builder.Services.AddTransient<PayPalPaymentProcessor>();
 
             builder.Services.AddSingleton(provider =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
-                var stripeApiKey = configuration["Stripe:ApiKey"];
-                return stripeApiKey;
+                var clientId = configuration["PayPal:ClientId"];
+                var clientSecret = configuration["PayPal:ClientSecret"];
+                var mode = configuration["PayPal:Mode"];
+                var environment = new SandboxEnvironment(clientId, clientSecret); 
+                var client = new PayPalHttpClient(environment);
+                return client;
             });
+
 
             builder.Services.AddTransient<StripePaymentProcessor>(provider =>
             {
-                var apiKey = provider.GetRequiredService<string>();
+                var stripeSecretKey = provider.GetRequiredService<string>();
                 var logger = provider.GetRequiredService<ILogger<StripePaymentProcessor>>();
-                return new StripePaymentProcessor(apiKey, logger);
+                return new StripePaymentProcessor(stripeSecretKey, logger);
             });
 
             builder.Services.AddSingleton<PaymentService>(provider =>
@@ -134,6 +146,7 @@ namespace OrderMangmentSystem.Helper
                 return new PaymentService(processors);
             });
 
+            builder.Services.AddTransient<PayPalPaymentProcessor>();
 
 
 

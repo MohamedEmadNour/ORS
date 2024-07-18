@@ -49,7 +49,7 @@ namespace OrderMangmentSystem.Controllers
 
         [DynamicFunctionAuthorize("CreateOrder")]
         [HttpPost("CreateOrder")]
-        public async Task<ActionResult<OrderDTO>> CreateOrder([FromForm] CreateOrderDTO createOrderDto)
+        public async Task<ActionResult<OrderDTO>> CreateOrder([FromBody] CreateOrderDTO createOrderDto)
         {
             if (!ModelState.IsValid)
             {

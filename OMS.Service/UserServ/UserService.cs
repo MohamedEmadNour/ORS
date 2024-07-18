@@ -9,6 +9,7 @@ using iText.Commons.Actions.Contexts;
 using Microsoft.AspNetCore.Identity;
 using OMS.Data.Entites.Accounting;
 using OMS.Data.Entites.Const;
+using OMS.Data.Entites.System;
 
 namespace OMS.Service.UserServ
 {
@@ -16,11 +17,13 @@ namespace OMS.Service.UserServ
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly AppIdentityDbContext _context;
+        private readonly RoleManager<AppRole> _roleManager;
 
-        public UserService(UserManager<AppUser> userManager, AppIdentityDbContext context)
+        public UserService(UserManager<AppUser> userManager, AppIdentityDbContext context , RoleManager<AppRole> roleManager)
         {
             _userManager = userManager;
             _context = context;
+            _roleManager = roleManager;
         }
 
         public async Task<bool> UserHasAccessAsync(string userId, string functionName)
@@ -39,11 +42,14 @@ namespace OMS.Service.UserServ
                                            .Include(f => f.tbFunctionRoles)
                                            .FirstOrDefaultAsync(f => f.FunctionName == functionName);
 
+            
+
             if (function == null) return false;
 
             foreach (var role in userRoles)
             {
-                if (function.tbFunctionRoles.Any(fr => fr.RoleId == role))
+                var roleid = await _roleManager.FindByNameAsync(role) ;
+                if (function.tbFunctionRoles.Any(fr => fr.RoleId == roleid.Id))
                 {
                     return true;
                 }

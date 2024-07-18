@@ -22,6 +22,7 @@ namespace OrderMangmentSystem.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IInvoiceService _invoiceService;
         private readonly IEmailService _emailService;
+        const string endpointSecret = "whsec_d439ab9aaa815f0dcb786a4c4c760e0effd4e8fb03111c45aa3b98ef89b9f5e7";
 
         public PaymentsController(PaymentService paymentService
                         , IUnitOfWork unitOfWork , IEmailService emailService , IInvoiceService invoiceService )

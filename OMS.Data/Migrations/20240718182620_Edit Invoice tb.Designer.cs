@@ -12,8 +12,8 @@ using OMS.Data.DBCOntext;
 namespace OMS.Data.Migrations
 {
     [DbContext(typeof(OSMDBContext))]
-    [Migration("20240717190216_Edit Order annd enum")]
-    partial class EditOrderanndenum
+    [Migration("20240718182620_Edit Invoice tb")]
+    partial class EditInvoicetb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,6 +64,9 @@ namespace OMS.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<decimal>("TotalAmount")

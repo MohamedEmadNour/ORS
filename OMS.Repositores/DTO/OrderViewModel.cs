@@ -28,8 +28,8 @@ namespace OMS.Repositores.DTO
     {
         public DateTime OrderDate { get; set; }
         public PaymentMethods PaymentMethod { get; set; }
-
-        public List<OrderItemDTO> OrderItems { get; set; }
+        [Required]
+        public List<OrderItemDTO> OrderItems { get; set; } = new List<OrderItemDTO>();
 
         public int CustomerId { get; set; }
 

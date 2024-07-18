@@ -11,6 +11,7 @@ namespace OrderMangmentSystem.Helper
         public MappingProfile() 
         {
             CreateMap<Order, OrderDTO>()
+
             .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.Name))
             .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => src.CreatedTime))
             .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount))
@@ -19,6 +20,7 @@ namespace OrderMangmentSystem.Helper
             .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems));
             
             CreateMap<OrderItem, OrderItemDTO>().ReverseMap();
+            
 
             CreateMap<Order, CreateOrderDTO>().ReverseMap();
             CreateMap<CreateCustomerDTO, Customer>().ReverseMap();

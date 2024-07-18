@@ -51,66 +51,50 @@ namespace OrderMangmentSystem.Controllers
         [HttpPost("CreateOrder")]
         public async Task<ActionResult<OrderDTO>> CreateOrder([FromForm] CreateOrderDTO createOrderDto)
         {
-            if (createOrderDto != null)
+            if (!ModelState.IsValid)
             {
-
-                var user = await _unitOfWork.repositories<Customer , int>().GetByIdAsync(createOrderDto.CustomerId);
-                
-                if (user.Email.ToLower() == createOrderDto.Email.ToLower())
-                {
-                    
-                    foreach (var item in createOrderDto.OrderItems)
-                    {
-                        var productItem = await _unitOfWork.repositories<Product, int>().GetByIdAsync(item.ProductId);
-                        if (productItem is null) return null;
-                        if (productItem.Price != item.UnitPrice)
-                        {
-                            item.UnitPrice = productItem.Price;
-                        }
-                        if (productItem.Stock < item.Quantity)
-                        {
-                            return BadRequest(new ApiResponse(404, productItem.Name + " Out of Stock"));
-                        }
-                        
-
-                    }
-
-                    var order = _mapper.Map<Order>(createOrderDto);
-
-      
-                    
-                    if (!await _orderService.ValidateStockAsync(order))
-                    {
-                        return BadRequest(new ApiResponse(400, "Insufficient stock for one or more products."));
-                    }
-
-                    order.TotalAmount = order.OrderItems.Sum(It => It.Quantity * It.UnitPrice);
-
-                    var discount = _orderService.ApplyDiscount(order);
-                    order.Status = OrderStatus.Processing;
-                    
-                    await _unitOfWork.repositories<Order, int>().AddAsync(order);
-                    await _unitOfWork.CompleteAsync();
-
-
-                    var invoicePath = await _invoiceService.GenerateInvoiceAsync(order);
-
-                    await _emailService.SendEmailAsync(order.Customer.Email, "Order Confirmation", invoicePath);
-
-
-                        var orderDto = _mapper.Map<OrderDTO>(order);
-                        return Ok(orderDto);
-                    
-
-
-
-                    
-
-                }
-                return BadRequest(new ApiResponse(400, "This user is not exist"));
+                return BadRequest(ModelState);
             }
-            return BadRequest(new ApiResponse(400, "Insufficient stock for one or more products."));
+
+            var user = await _unitOfWork.repositories<Customer, int>().GetByIdAsync(createOrderDto.CustomerId);
+            if (user == null || user.Email.ToLower() != createOrderDto.Email.ToLower())
+            {
+                return BadRequest(new ApiResponse(400, "User does not exist"));
+            }
+
+            foreach (var item in createOrderDto.OrderItems)
+            {
+                var productItem = await _unitOfWork.repositories<Product, int>().GetByIdAsync(item.ProductId);
+                if (productItem == null) return BadRequest(new ApiResponse(404, "Product not found"));
+                if (productItem.Price != item.UnitPrice)
+                {
+                    item.UnitPrice = productItem.Price;
+                }
+                if (productItem.Stock < item.Quantity)
+                {
+                    return BadRequest(new ApiResponse(400, $"{productItem.Name} is out of stock"));
+                }
+            }
+
+            var order = _mapper.Map<Order>(createOrderDto);
+            if (!await _orderService.ValidateStockAsync(order))
+            {
+                return BadRequest(new ApiResponse(400, "Insufficient stock for one or more products."));
+            }
+
+            order.TotalAmount = order.OrderItems.Sum(it => it.Quantity * it.UnitPrice);
+            order.Status = OrderStatus.Processing;
+
+            await _unitOfWork.repositories<Order, int>().AddAsync(order);
+            await _unitOfWork.CompleteAsync();
+
+            var invoicePath = await _invoiceService.GenerateInvoiceAsync(order);
+            await _emailService.SendEmailAsync(order.Customer.Email, "Order Confirmation", invoicePath);
+
+            var orderDto = _mapper.Map<OrderDTO>(order);
+            return Ok(orderDto);
         }
+
 
 
         [DynamicFunctionAuthorize("GetOrderById")]
